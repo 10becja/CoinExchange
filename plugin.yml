@@ -1,0 +1,21 @@
+name: CoinExchange
+main: me.becja10.CoinExchange.CoinExchange
+author: 10becja
+version: 1.0
+description: A Coin Plugin
+commands:
+  addcoins:
+    description: adds coins to a player
+    usage: /<command> <player> <amount>
+  removecoins:
+    description: Removes coins from a player
+    usage: /<command> <player> <amount>
+  viewcoins:
+    description: Views how many coins you or another players has
+    usage: /<command> (player)
+  spendcoins:
+    description: Open a GUI to spend your coins
+    usage: /<command>
+  reloadcoins:
+    descript: Reloads the configus
+    usage: /<command>

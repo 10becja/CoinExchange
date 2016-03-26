@@ -3,17 +3,22 @@ package me.becja10.CoinExchange.Commands;
 import java.util.HashMap;
 import java.util.UUID;
 
+import me.becja10.CoinExchange.CoinExchange;
 import me.becja10.CoinExchange.Utils.CommandManager;
 import me.becja10.CoinExchange.Utils.CommandObject;
 import me.becja10.CoinExchange.Utils.Messages;
 import me.becja10.CoinExchange.Utils.PlayerManager;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 
 public class SpendHandler implements Listener {
@@ -29,8 +34,7 @@ public class SpendHandler implements Listener {
 		else
 		{
 			Player p = (Player) sender;
-			int coins = PlayerManager.getCoinsFor(p.getUniqueId());
-			Inventory inv = CommandManager.viewPage(1, coins);
+			Inventory inv = CommandManager.viewPage(1);
 			p.openInventory(inv);
 			openInventories.put(p.getUniqueId(), inv);
 		}
@@ -42,27 +46,76 @@ public class SpendHandler implements Listener {
 	{
 		Inventory inv = event.getClickedInventory();
 		Player p = (Player) event.getWhoClicked();
-		if(inv == null)
+		boolean isOpen = p.getOpenInventory().getTopInventory().equals(openInventories.get(p.getUniqueId()));
+		if(inv == null || !isOpen)
 			return;
-		if(!inv.equals(openInventories.get(p.getUniqueId())))
+		if(!inv.equals(openInventories.get(p.getUniqueId())) || event.isShiftClick() || event.getCursor().getType() != Material.AIR)
+		{
+			event.setCancelled(true);
 			return;
-		String title = inv.getTitle();
+		}
 		int page = CommandManager.getPage(inv);
 		int slot = event.getSlot();
+		if(inv.getItem(slot) == null || inv.getItem(slot).getType() == Material.AIR)
+			return;
 		switch(slot){
-			case 19: //back
-			
+			case 18: //back
+				Inventory back = CommandManager.viewPage(page - 1);
+				closeAndOpenInventory(event, p, back);
 				return;
-			case 20: //forward
-				
-				break;
-			case 27: //cancel
-				
-				break;			
+			case 19: //forward
+				Inventory forward = CommandManager.viewPage(page + 1);
+				closeAndOpenInventory(event, p, forward);
+				return;
+			case 26: //close
+				closeAndOpenInventory(event, p, null);
+				return;
 		}
-			
+		event.setCancelled(true);
+		int coins = PlayerManager.getCoinsFor(p.getUniqueId());
 		CommandObject obj = CommandManager.getObj(page, slot);
-		String cmd = obj.command.replace("{player}", p.getName());
+		if(coins < obj.price){
+			p.sendMessage(Messages.notEnoughCoins());
+		}			
+		else{
+			String cmd = obj.command.replace("{player}", p.getName());
+			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd);
+			PlayerManager.updateCoins(p.getUniqueId(), coins - obj.price);
+			p.sendMessage(Messages.spentCoins(obj.price, PlayerManager.getCoinsFor(p.getUniqueId())));
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.HIGHEST)
+	public void onInventoryClose(InventoryCloseEvent event){
+		Inventory inv = event.getInventory();
+		Player p = (Player) event.getPlayer();
+		if(inv.equals(openInventories.get(p.getUniqueId())))
+				openInventories.remove(p.getUniqueId());
+	}
+	
+	@EventHandler(priority=EventPriority.HIGHEST)
+	public void onInventoryDrag(InventoryDragEvent event){
+		Inventory inv = event.getInventory();
+		Player p = (Player) event.getWhoClicked();
+		if(inv.equals(openInventories.get(p.getUniqueId())))
+			event.setCancelled(true);
+	}
+	
+	private void closeAndOpenInventory(InventoryClickEvent event, final Player p, final Inventory toOpen) {
+		event.setCancelled(true);
+		Bukkit.getScheduler().runTask(CoinExchange.instance, new Runnable(){
+			public void run(){
+				p.closeInventory();
+				if(toOpen != null){
+					Bukkit.getScheduler().runTask(CoinExchange.instance, new Runnable(){
+						public void run(){
+							p.openInventory(toOpen);
+							openInventories.put(p.getUniqueId(), toOpen);
+						}
+					});
+				}
+			}
+		});
 	}
 
 }

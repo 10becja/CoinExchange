@@ -41,6 +41,10 @@ public class PlayerManager
 		}
 	}
 	
+	public static void setUpManager(){
+		reloadPlayers();
+	}
+	
 	public static int getCoinsFor(UUID id)
 	{
 		return config.getInt(id.toString(), 0);

@@ -61,6 +61,7 @@ public class CommandManager
 	}
 	
 	public static void setUpManager(){
+		reloadCommands();
 		String str = "pages.page-1.slot-1";
 		String help = "You can use these tokens in your commands";
 		config.set(help + ".{player}", "The player who selected the command to run.");
@@ -84,50 +85,50 @@ public class CommandManager
 	
 	public static CommandObject getObj(int page, int slot){
 		CommandObject ret = null;
-		String str = "pages.page-" + page + ".slot-" + slot;
+		String str = "pages.page-" + page + ".slot-" + (slot + 1);
 		if(config.contains(str))
 			ret = new CommandObject(config.getString(str + ".command"),
 									config.getInt(str + ".price"));
 		return ret;
 	}
 	
-	public static Inventory viewPage(int page, int coins)
+	public static Inventory viewPage(int page)
 	{
 		Inventory inv = null;
 		String str = "pages.page-" + page;
 		if(config.contains(str))
 		{
-			inv = Bukkit.createInventory(null, 27, "CoinExchange purchases: Page " + page + ". You have " + coins + " coins" );
+			inv = Bukkit.createInventory(null, 27, "Page " + page);
 			for(String slot : config.getConfigurationSection(str).getKeys(false))
 			{
-				int slotNum = Integer.parseInt(slot.substring(5));
+				String key = str + "." + slot;
+				int slotNum = Integer.parseInt(slot.substring(5)) - 1;
 				if(slotNum > 18) continue;
-				int matId = config.getInt(slot + ".displayItem", -1);
+				int matId = config.getInt(key + ".displayItem", -1);
 				Material mat = Material.getMaterial(matId);
 				ItemStack item = (mat == null) ? new ItemStack(Material.GOLD_NUGGET) : new ItemStack(mat);
 				ItemMeta meta = item.getItemMeta();
-				meta.setDisplayName(config.getString(slot + ".displayText", "A thing"));
-				meta.setLore(Arrays.asList("Price: " + config.getString(slot + ".price"), "$$"));
+				meta.setDisplayName(config.getString(key + ".displayText", "A thing"));
+				meta.setLore(Arrays.asList("Price: " + config.getString(key + ".price", "$$") + " coins"));
 				item.setItemMeta(meta);		
 				
 				inv.setItem(slotNum, item);
 			}
 			if(page > 1)
-				inv.setItem(19, back);
+				inv.setItem(18, back);
 			if(page < config.getConfigurationSection("pages").getKeys(false).size())
-				inv.setItem(20, forward);
-			inv.setItem(27, close);
+				inv.setItem(19, forward);
+			inv.setItem(26, close);
 		}
 		
 		return inv;		
 	}
 
 	public static int getPage(Inventory inv) {
-		String title = inv.getTitle().split(".")[0];
-		title = title.replace("CoinExchange purchases: Page ", "");
+		String titlePage = inv.getTitle().substring(5);
 		int page = 1;
 		try{
-			page = Integer.parseInt(title);
+			page = Integer.parseInt(titlePage);
 		}
 		catch(NumberFormatException ex){
 			page = 1;

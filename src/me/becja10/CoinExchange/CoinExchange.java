@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import me.becja10.CoinExchange.Commands.CoinCmdHandler;
 import me.becja10.CoinExchange.Commands.SpendHandler;
 import me.becja10.CoinExchange.Utils.CommandManager;
+import me.becja10.CoinExchange.Utils.Messages;
 import me.becja10.CoinExchange.Utils.PlayerManager;
 
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -16,6 +17,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
 public class CoinExchange extends JavaPlugin implements Listener{
@@ -59,6 +61,7 @@ public class CoinExchange extends JavaPlugin implements Listener{
 		
 		loadConfig();
 		CommandManager.setUpManager();
+		PlayerManager.setUpManager();
 		
 	}
 	
@@ -82,6 +85,16 @@ public class CoinExchange extends JavaPlugin implements Listener{
 				return CoinCmdHandler.ViewCoins(sender, args);
 			case "spendcoins":
 				return SpendHandler.runCommand(sender); 
+			case "reloadcoins":
+				if(sender instanceof Player && !sender.hasPermission("coinexchange.admin"))
+					sender.sendMessage(Messages.noPermission());
+				else{
+					PlayerManager.reloadPlayers();
+					loadConfig();
+					CommandManager.reloadCommands();
+					sender.sendMessage(Messages.reloadSuccessful());
+				}
+				return true;
 		}
 		return true;
 	}

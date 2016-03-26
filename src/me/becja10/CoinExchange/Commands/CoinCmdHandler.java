@@ -99,7 +99,7 @@ public class CoinCmdHandler {
 			}
 			if(id != null){
 				int coins = PlayerManager.getCoinsFor(id);
-				String msg = (args.length > 0) ? Messages.myCoins(coins) : Messages.otherCoins(((Player) sender).getName(), coins);
+				String msg = (args.length == 0) ? Messages.myCoins(coins) : Messages.otherCoins(((Player) sender).getName(), coins);
 				sender.sendMessage(msg);
 			}
 			else
