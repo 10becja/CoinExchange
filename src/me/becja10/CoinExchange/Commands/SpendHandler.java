@@ -8,6 +8,7 @@ import me.becja10.CoinExchange.Utils.CommandManager;
 import me.becja10.CoinExchange.Utils.CommandObject;
 import me.becja10.CoinExchange.Utils.Messages;
 import me.becja10.CoinExchange.Utils.PlayerManager;
+import net.md_5.bungee.api.ChatColor;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -79,9 +80,30 @@ public class SpendHandler implements Listener {
 		}			
 		else{
 			String cmd = obj.command.replace("{player}", p.getName());
-			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd);
-			PlayerManager.updateCoins(p.getUniqueId(), coins - obj.price);
-			p.sendMessage(Messages.spentCoins(obj.price, PlayerManager.getCoinsFor(p.getUniqueId())));
+			boolean op = false;
+			boolean cmdSucceeded = false;
+			try{
+				if(cmd.startsWith("^")){
+					cmd = cmd.substring(1);
+					if(!p.isOp()){
+						op = true;
+						p.setOp(true);
+					}					
+					cmdSucceeded = p.performCommand(cmd);
+				}else{
+					cmdSucceeded = Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd);
+				}
+			} finally{
+				if(cmdSucceeded){
+					PlayerManager.updateCoins(p.getUniqueId(), coins - obj.price);
+					p.sendMessage(Messages.spentCoins(obj.price, PlayerManager.getCoinsFor(p.getUniqueId())));
+				} else{
+					p.sendMessage(ChatColor.RED + "Command failed to run. Please contact staff.");
+				}
+				if(op)
+					p.setOp(false);
+			}	
+			
 		}
 	}
 	

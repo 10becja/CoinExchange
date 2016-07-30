@@ -14,7 +14,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-@SuppressWarnings("deprecation")
 public class CommandManager
 {
 	private static FileConfiguration config = null;
@@ -29,7 +28,7 @@ public class CommandManager
 	public static FileConfiguration getCommands() {
 		/*
 		 * "You can use these tokens in your commands":
-		 *   {players}: blah
+		 *   {player}: blah
 		 * 
 		 * pages:
 		 *   page-<page number>: 
@@ -62,9 +61,19 @@ public class CommandManager
 	
 	public static void setUpManager(){
 		reloadCommands();
+		String header = "You can use these tokens in your commands.\n";
+		header += "{player} : The player who selected the command to run\n";
+
+		header += "\n";
+		
+		header += "By default, the command will be run by the console. \n"
+				+ "To have the player run it with elevated permissions,\n"
+				+ "add a ^ in front of the command.\n";
+		
+		config.options().header(header);
+		config.options().copyHeader(true);
+		
 		String str = "pages.page-1.slot-1";
-		String help = "You can use these tokens in your commands";
-		config.set(help + ".{player}", "The player who selected the command to run.");
 		if(!config.contains(str)){
 			config.set(str + ".command", "eco give {player} 1000");
 			config.set(str + ".price", 10);
@@ -92,6 +101,7 @@ public class CommandManager
 		return ret;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static Inventory viewPage(int page)
 	{
 		Inventory inv = null;
@@ -104,9 +114,26 @@ public class CommandManager
 				String key = str + "." + slot;
 				int slotNum = Integer.parseInt(slot.substring(5)) - 1;
 				if(slotNum > 18) continue;
-				int matId = config.getInt(key + ".displayItem", -1);
-				Material mat = Material.getMaterial(matId);
-				ItemStack item = (mat == null) ? new ItemStack(Material.GOLD_NUGGET) : new ItemStack(mat);
+				
+				String mat = config.getString(key + ".displayItem");				
+				ItemStack item = ItemManager.getItem(mat);
+				
+				if(item == null){
+					
+					boolean isNum = false;
+					int matNum = 0;
+					try{
+						matNum = Integer.parseInt(mat);
+						isNum = true;
+					}catch(NumberFormatException e){
+						isNum = false;
+					}					
+					
+					Material material = (isNum) ? Material.getMaterial(matNum) : Material.getMaterial(mat);
+					if(material == null)
+						System.out.println("Bad displayItem for page " + page + " slot " + slot);
+					item = (material == null) ? new ItemStack(Material.GOLD_NUGGET) : new ItemStack(material);
+				}
 				ItemMeta meta = item.getItemMeta();
 				meta.setDisplayName(config.getString(key + ".displayText", "A thing"));
 				meta.setLore(Arrays.asList("Price: " + config.getString(key + ".price", "$$") + " coins"));
@@ -136,11 +163,4 @@ public class CommandManager
 		
 		return page;
 	}
-
-//	public static void saveDefaultCommands() {
-//		if (commands == null)
-//			commands = new File(path);
-//		if (!commands.exists())
-//			CoinExchange.instance.saveResource("commands.yml", false);
-//	}
 }

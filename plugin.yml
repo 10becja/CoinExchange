@@ -1,7 +1,7 @@
 name: CoinExchange
 main: me.becja10.CoinExchange.CoinExchange
 author: 10becja
-version: 1.0
+version: 1.1
 description: A Coin Plugin
 commands:
   addcoins:
@@ -17,5 +17,8 @@ commands:
     description: Open a GUI to spend your coins
     usage: /<command>
   reloadcoins:
-    descript: Reloads the configus
+    description: Reloads the config
     usage: /<command>
+  cecustomitem:
+    description: Adds a custom item that can be used in inventory menu
+    usage: /<command> <item key>
