@@ -58,6 +58,8 @@ public class ItemManager {
 	}
 	
 	public static ItemStack getItem(String itemKey){
+		if(itemKey == null)
+			return null;
 		return config.getItemStack(itemKey, null);
 	}
 }
