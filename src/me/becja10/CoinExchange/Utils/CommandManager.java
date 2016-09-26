@@ -4,15 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import me.becja10.CoinExchange.CoinExchange;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.permissions.PermissionAttachmentInfo;
+
+import me.becja10.CoinExchange.CoinExchange;
 
 public class CommandManager
 {
@@ -26,10 +28,7 @@ public class CommandManager
 	private static ItemStack close = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
 
 	public static FileConfiguration getCommands() {
-		/*
-		 * "You can use these tokens in your commands":
-		 *   {player}: blah
-		 * 
+		/* 
 		 * pages:
 		 *   page-<page number>: 
 		 *     slot-<1-18>:
@@ -37,6 +36,9 @@ public class CommandManager
 		 *       price: <in coins>
 		 *       displayItem: <id of material to display in chest>
 		 *       displayText: <the text to show>
+		 *       showPermission: 
+		 *       usePermToHide:
+		 *       closeWhenDone:
 		 */
 		if (config == null)
 			reloadCommands();
@@ -68,18 +70,23 @@ public class CommandManager
 		
 		header += "By default, the command will be run by the console. \n"
 				+ "To have the player run it with elevated permissions,\n"
-				+ "add a ^ in front of the command.\n";
+				+ "add a ^ in front of the command.\n\n";
+		
+		header += "Example setup:"
+				+ "pages:"
+				+ "  page-1:"
+				+ "    slot-1:"
+				+ "      command: eco give {player} 250"
+				+ "      price: 10"
+				+ "      displayItem: 371"
+				+ "      displayText: convert to $250"
+				+ "      permission: <optional>"
+				+ "      usePermToHide: false\n"
+				+ "      closeWhenDone: <optional>";
 		
 		config.options().header(header);
 		config.options().copyHeader(true);
 		
-		String str = "pages.page-1.slot-1";
-		if(!config.contains(str)){
-			config.set(str + ".command", "eco give {player} 1000");
-			config.set(str + ".price", 10);
-			config.set(str + ".displayItem", 371);
-			config.set(str + ".displayText", "Convert Coins to Economy Money");
-		}
 		saveCommands();
 		ItemMeta meta = forward.getItemMeta();
 		meta.setDisplayName("Next Page");
@@ -97,12 +104,13 @@ public class CommandManager
 		String str = "pages.page-" + page + ".slot-" + (slot + 1);
 		if(config.contains(str))
 			ret = new CommandObject(config.getString(str + ".command"),
-									config.getInt(str + ".price"));
+									config.getInt(str + ".price"),
+									config.getBoolean(str + ".closeWhenDone", false));
 		return ret;
 	}
 	
 	@SuppressWarnings("deprecation")
-	public static Inventory viewPage(int page)
+	public static Inventory viewPage(int page, Player p)
 	{
 		Inventory inv = null;
 		String str = "pages.page-" + page;
@@ -114,6 +122,36 @@ public class CommandManager
 				String key = str + "." + slot;
 				int slotNum = Integer.parseInt(slot.substring(5)) - 1;
 				if(slotNum > 18) continue;
+				
+				String permission = config.getString(key + ".permission", "");
+				if(permission != ""){
+					int idx = -1;
+					if(permission.contains("*")){
+						idx = permission.lastIndexOf("*");
+						if(idx >= 0)
+							permission = permission.substring(0, idx);
+					}
+					boolean hide = config.getBoolean(key + ".usePermToHide", false);
+
+					boolean hasPermission = false;
+					for(PermissionAttachmentInfo perm : p.getEffectivePermissions()){
+						String node = perm.getPermission();
+						if(idx >= 0){
+							if(idx < node.length())
+								node = node.substring(0, idx);
+							else
+								continue;
+						}
+						if(node.equalsIgnoreCase(permission)){
+							hasPermission = true;
+							break;
+						}								
+					}
+					//if hide and hasPermission
+					//if not hide and not hasPermission
+					if(hide == hasPermission)
+						continue;					
+				}
 				
 				String mat = config.getString(key + ".displayItem");				
 				ItemStack item = ItemManager.getItem(mat);

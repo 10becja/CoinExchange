@@ -35,7 +35,7 @@ public class SpendHandler implements Listener {
 		else
 		{
 			Player p = (Player) sender;
-			Inventory inv = CommandManager.viewPage(1);
+			Inventory inv = CommandManager.viewPage(1, p);
 			p.openInventory(inv);
 			openInventories.put(p.getUniqueId(), inv);
 		}
@@ -61,11 +61,11 @@ public class SpendHandler implements Listener {
 			return;
 		switch(slot){
 			case 18: //back
-				Inventory back = CommandManager.viewPage(page - 1);
+				Inventory back = CommandManager.viewPage(page - 1, p);
 				closeAndOpenInventory(event, p, back);
 				return;
 			case 19: //forward
-				Inventory forward = CommandManager.viewPage(page + 1);
+				Inventory forward = CommandManager.viewPage(page + 1, p);
 				closeAndOpenInventory(event, p, forward);
 				return;
 			case 26: //close
@@ -97,6 +97,8 @@ public class SpendHandler implements Listener {
 				if(cmdSucceeded){
 					PlayerManager.updateCoins(p.getUniqueId(), coins - obj.price);
 					p.sendMessage(Messages.spentCoins(obj.price, PlayerManager.getCoinsFor(p.getUniqueId())));
+					if(obj.closeWhenDone)
+						closeAndOpenInventory(event, p, null);
 				} else{
 					p.sendMessage(ChatColor.RED + "Command failed to run. Please contact staff.");
 				}

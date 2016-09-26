@@ -4,9 +4,12 @@ public class CommandObject {
 	
 	public String command;
 	public int price;
+	public boolean closeWhenDone;
 	
-	public CommandObject(String cmd, int prc){
+	public CommandObject(String cmd, int prc, boolean close){
 		command = cmd;
 		price = prc;
+		closeWhenDone = close;
+		
 	}
 }
