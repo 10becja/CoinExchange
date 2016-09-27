@@ -24,8 +24,9 @@ public class CommandManager
 			+ File.separator + "commands.yml";
 	
 	private static ItemStack forward = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
-	private static ItemStack back = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 6);
-	private static ItemStack close = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
+	private static ItemStack back = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14 /*6*/);
+	//private static ItemStack close = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
+	private static ItemStack close = new ItemStack(Material.BARRIER);
 
 	public static FileConfiguration getCommands() {
 		/* 
@@ -72,17 +73,17 @@ public class CommandManager
 				+ "To have the player run it with elevated permissions,\n"
 				+ "add a ^ in front of the command.\n\n";
 		
-		header += "Example setup:"
-				+ "pages:"
-				+ "  page-1:"
-				+ "    slot-1:"
-				+ "      command: eco give {player} 250"
-				+ "      price: 10"
-				+ "      displayItem: 371"
-				+ "      displayText: convert to $250"
-				+ "      permission: <optional>"
+		header += "Example setup:\n"
+				+ "pages:\n"
+				+ "  page-1:\n"
+				+ "    slot-1:\n"
+				+ "      command: eco give {player} 250\n"
+				+ "      price: 10\n"
+				+ "      displayItem: 371\n"
+				+ "      displayText: convert to $250\n"
+				+ "      permission: <optional>\n"
 				+ "      usePermToHide: false\n"
-				+ "      closeWhenDone: <optional>";
+				+ "      closeWhenDone: <optional>\n\n";
 		
 		config.options().header(header);
 		config.options().copyHeader(true);

@@ -89,7 +89,7 @@ public class CoinExchange extends JavaPlugin implements Listener{
 			case "viewcoins":
 				return CoinCmdHandler.ViewCoins(sender, args);
 			case "spendcoins":
-				return SpendHandler.runCommand(sender);
+				return SpendHandler.runCommand(sender, args);
 			case "cecustomitem":
 				return addCustomItem(sender, args);
 			case "reloadcoins":

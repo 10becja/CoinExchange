@@ -26,7 +26,7 @@ public class SpendHandler implements Listener {
 	
 	private static HashMap<UUID, Inventory> openInventories = new HashMap<UUID,Inventory>();
 
-	public static boolean runCommand(CommandSender sender) {
+	public static boolean runCommand(CommandSender sender, String[] args) {
 		
 		if(!(sender instanceof Player))
 			sender.sendMessage(Messages.playersOnly());
@@ -34,8 +34,17 @@ public class SpendHandler implements Listener {
 			sender.sendMessage(Messages.noPermission());
 		else
 		{
+			int page = 1;
+			if(args.length > 0){
+				try{
+					page = Integer.parseInt(args[0]);
+				}
+				catch(Exception e){
+					page = 1;
+				}
+			}
 			Player p = (Player) sender;
-			Inventory inv = CommandManager.viewPage(1, p);
+			Inventory inv = CommandManager.viewPage(page, p);
 			p.openInventory(inv);
 			openInventories.put(p.getUniqueId(), inv);
 		}

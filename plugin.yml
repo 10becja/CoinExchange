@@ -15,7 +15,7 @@ commands:
     usage: /<command> (player)
   spendcoins:
     description: Open a GUI to spend your coins
-    usage: /<command>
+    usage: /<command> [page]
   reloadcoins:
     description: Reloads the config
     usage: /<command>
