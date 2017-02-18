@@ -76,6 +76,7 @@ public class CoinExchange extends JavaPlugin implements Listener{
 		saveConfig(outConfig, configPath);
 		PlayerManager.savePlayers();
 		CommandManager.saveCommands();
+		ItemManager.saveItems();
 	}
 	
 	@Override
@@ -99,6 +100,7 @@ public class CoinExchange extends JavaPlugin implements Listener{
 					PlayerManager.reloadPlayers();
 					loadConfig();
 					CommandManager.reloadCommands();
+					ItemManager.reloadItems();
 					sender.sendMessage(Messages.reloadSuccessful());
 				}
 				return true;
