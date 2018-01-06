@@ -99,6 +99,7 @@ public class SpendHandler implements Listener {
 						p.setOp(true);
 					}					
 					cmdSucceeded = p.performCommand(cmd);
+					CoinExchange.logger.info(cmd);
 				}else{
 					cmdSucceeded = Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd);
 				}
